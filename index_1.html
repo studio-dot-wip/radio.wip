@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>radio.wip</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+.wp-root {
+  width: 275px;
+  background: #1a1a1a;
+  border: 2px solid #555;
+  box-shadow: inset 1px 1px 0 #888, inset -1px -1px 0 #111;
+  font-family: 'VT323', monospace;
+  color: #00ff41;
+  user-select: none;
+}
+.wp-titlebar {
+  background: linear-gradient(to right, #2a2a8c, #1a1a1a);
+  padding: 3px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-family: Arial, sans-serif;
+  color: #aaa;
+}
+.wp-titlebar span { color: #ccc; font-weight: bold; font-size: 11px; }
+.wp-titlebar-btns { display: flex; gap: 2px; }
+.wp-titlebar-btns button {
+  width: 14px; height: 14px;
+  background: #555; border: 1px solid #888;
+  color: #aaa; font-size: 9px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; font-family: Arial, sans-serif;
+  box-shadow: inset 1px 1px 0 #999, inset -1px -1px 0 #333;
+}
+.wp-screen {
+  background: #000;
+  padding: 8px 10px 6px;
+  border-top: 1px solid #333;
+  border-bottom: 1px solid #333;
+}
+.wp-lcd { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.wp-trackinfo { flex: 1; overflow: hidden; }
+.wp-scroll-container { overflow: hidden; white-space: nowrap; width: 100%; }
+.wp-title-scroll { display: inline-block; font-size: 14px; color: #00ff41; letter-spacing: 0.5px; }
+.wp-time { font-size: 28px; color: #00ff41; letter-spacing: 2px; min-width: 72px; text-align: right; line-height: 1; }
+.wp-bitrate { font-size: 11px; color: #00aa22; margin-top: 2px; }
+.wp-vis { display: flex; align-items: flex-end; gap: 1px; height: 28px; margin-top: 4px; }
+.wp-bar { width: 4px; background: #003300; min-height: 2px; transition: height 0.08s ease; }
+.wp-seek { margin-top: 6px; }
+.wp-seek-track { width: 100%; height: 6px; background: #003300; border: 1px solid #005500; position: relative; cursor: pointer; }
+.wp-seek-fill { height: 100%; background: #00ff41; width: 0%; }
+.wp-seek-thumb { position: absolute; top: -3px; width: 4px; height: 12px; background: #00ff41; left: 0%; transform: translateX(-50%); }
+.wp-controls { background: #1a1a1a; padding: 6px 8px; display: flex; align-items: center; gap: 4px; }
+.wp-btn {
+  background: #2a2a2a; border: 1px solid #555;
+  box-shadow: inset 1px 1px 0 #444, inset -1px -1px 0 #111;
+  color: #00ff41; cursor: pointer;
+  font-family: 'VT323', monospace; font-size: 16px;
+  padding: 2px 8px; min-width: 28px;
+  display: flex; align-items: center; justify-content: center;
+}
+.wp-btn:active { box-shadow: inset -1px -1px 0 #444, inset 1px 1px 0 #111; background: #111; }
+.wp-btn.play-btn { font-size: 18px; }
+.wp-vol { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.wp-vol-label { font-size: 11px; color: #00aa22; }
+.wp-vol-track { width: 52px; height: 5px; background: #003300; border: 1px solid #005500; position: relative; cursor: pointer; }
+.wp-vol-fill { height: 100%; background: #00cc33; width: 80%; }
+.wp-eq { background: #1a1a1a; padding: 4px 8px 6px; border-top: 1px solid #333; display: flex; gap: 3px; align-items: flex-end; justify-content: center; }
+.wp-eq-bar { width: 6px; background: #003300; border: 1px solid #005500; position: relative; height: 36px; }
+.wp-eq-fill { position: absolute; bottom: 0; width: 100%; background: #00cc33; }
+.wp-eq-label { font-size: 9px; color: #005500; text-align: center; margin-top: 2px; font-family: Arial, sans-serif; }
+.wp-eq-section { display: flex; flex-direction: column; align-items: center; }
+.wp-status { font-size: 11px; color: #005500; padding: 2px 8px; background: #000; border-top: 1px solid #003300; letter-spacing: 1px; font-family: 'VT323', monospace; }
+</style>
+</head>
+<body>
+
+<div class="wp-root">
+  <div class="wp-titlebar">
+    <span>RADIO.WIP</span>
+    <div style="font-size:10px;color:#888;">audio player</div>
+    <div class="wp-titlebar-btns">
+      <button>_</button><button>□</button><button style="color:#f55;">×</button>
+    </div>
+  </div>
+  <div class="wp-screen">
+    <div class="wp-lcd">
+      <div class="wp-trackinfo">
+        <div class="wp-scroll-container">
+          <div class="wp-title-scroll" id="wp-title">01. radio.wip ep.1</div>
+        </div>
+        <div class="wp-bitrate">128 kbps · 44 khz · stereo</div>
+      </div>
+      <div>
+        <div class="wp-time" id="wp-time">0:00</div>
+        <div style="font-size:10px;color:#005500;text-align:right;" id="wp-dur">/ 0:00</div>
+      </div>
+    </div>
+    <div class="wp-vis">
+      <div class="wp-bar"></div><div class="wp-bar"></div><div class="wp-bar"></div><div class="wp-bar"></div>
+      <div class="wp-bar"></div><div class="wp-bar"></div><div class="wp-bar"></div><div class="wp-bar"></div>
+      <div class="wp-bar"></div><div class="wp-bar"></div><div class="wp-bar"></div><div class="wp-bar"></div>
+      <div class="wp-bar"></div><div class="wp-bar"></div><div class="wp-bar"></div><div class="wp-bar"></div>
+    </div>
+    <div class="wp-seek">
+      <div class="wp-seek-track" id="wp-seek">
+        <div class="wp-seek-fill" id="wp-seek-fill"></div>
+        <div class="wp-seek-thumb" id="wp-seek-thumb"></div>
+      </div>
+    </div>
+  </div>
+  <div class="wp-controls">
+    <button class="wp-btn" id="btn-prev">⏮</button>
+    <button class="wp-btn play-btn" id="btn-play">▶</button>
+    <button class="wp-btn" id="btn-stop">⏹</button>
+    <button class="wp-btn" id="btn-next">⏭</button>
+    <div class="wp-vol">
+      <span class="wp-vol-label">VOL</span>
+      <div class="wp-vol-track" id="wp-vol-track"><div class="wp-vol-fill" id="wp-vol-fill"></div></div>
+    </div>
+  </div>
+  <div class="wp-eq">
+    <div class="wp-eq-section"><div class="wp-eq-bar"><div class="wp-eq-fill" style="height:60%;"></div></div><div class="wp-eq-label">60</div></div>
+    <div class="wp-eq-section"><div class="wp-eq-bar"><div class="wp-eq-fill" style="height:75%;"></div></div><div class="wp-eq-label">170</div></div>
+    <div class="wp-eq-section"><div class="wp-eq-bar"><div class="wp-eq-fill" style="height:50%;"></div></div><div class="wp-eq-label">310</div></div>
+    <div class="wp-eq-section"><div class="wp-eq-bar"><div class="wp-eq-fill" style="height:65%;"></div></div><div class="wp-eq-label">600</div></div>
+    <div class="wp-eq-section"><div class="wp-eq-bar"><div class="wp-eq-fill" style="height:80%;"></div></div><div class="wp-eq-label">1k</div></div>
+    <div class="wp-eq-section"><div class="wp-eq-bar"><div class="wp-eq-fill" style="height:70%;"></div></div><div class="wp-eq-label">3k</div></div>
+    <div class="wp-eq-section"><div class="wp-eq-bar"><div class="wp-eq-fill" style="height:55%;"></div></div><div class="wp-eq-label">6k</div></div>
+    <div class="wp-eq-section"><div class="wp-eq-bar"><div class="wp-eq-fill" style="height:45%;"></div></div><div class="wp-eq-label">12k</div></div>
+    <div class="wp-eq-section"><div class="wp-eq-bar"><div class="wp-eq-fill" style="height:35%;"></div></div><div class="wp-eq-label">14k</div></div>
+    <div class="wp-eq-section"><div class="wp-eq-bar"><div class="wp-eq-fill" style="height:30%;"></div></div><div class="wp-eq-label">16k</div></div>
+  </div>
+  <div class="wp-status" id="wp-status">STOPPED</div>
+</div>
+
+<audio id="wp-audio" crossorigin="anonymous"></audio>
+
+<script>
+const audio = document.getElementById('wp-audio');
+const bars = document.querySelectorAll('.wp-bar');
+const eqBars = document.querySelectorAll('.wp-eq-fill');
+const titleEl = document.getElementById('wp-title');
+const timeEl = document.getElementById('wp-time');
+const durEl = document.getElementById('wp-dur');
+const seekFill = document.getElementById('wp-seek-fill');
+const seekThumb = document.getElementById('wp-seek-thumb');
+const seekTrack = document.getElementById('wp-seek');
+const volFill = document.getElementById('wp-vol-fill');
+const volTrack = document.getElementById('wp-vol-track');
+const statusEl = document.getElementById('wp-status');
+const playBtn = document.getElementById('btn-play');
+
+const playlist = [
+  { title: 'radio.wip ep.1', src: 'https://pub-986199ec756b4989a709d1a627dbca64.r2.dev/playlist_merged.mp3' }
+];
+
+let currentTrack = 0, isPlaying = false, animFrame;
+let volume = 0.8, scrollPos = 0, scrollDir = 1, scrollInterval;
+audio.volume = volume;
+
+function fmt(s) {
+  s = Math.floor(s || 0);
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+}
+
+function loadTrack(idx) {
+  const t = playlist[idx];
+  audio.src = t.src;
+  titleEl.textContent = (idx + 1) + '. ' + t.title;
+  timeEl.textContent = '0:00';
+  durEl.textContent = '/ 0:00';
+  seekFill.style.width = '0%';
+  seekThumb.style.left = '0%';
+  resetScroll();
+}
+
+function resetScroll() {
+  clearInterval(scrollInterval);
+  scrollPos = 0;
+  titleEl.style.transform = 'translateX(0)';
+  setTimeout(() => {
+    const overflow = titleEl.scrollWidth - titleEl.parentElement.clientWidth;
+    if (overflow > 0) {
+      scrollInterval = setInterval(() => {
+        scrollPos += scrollDir * 0.5;
+        if (scrollPos >= overflow) scrollDir = -1;
+        if (scrollPos <= 0) scrollDir = 1;
+        titleEl.style.transform = 'translateX(-' + Math.max(0, scrollPos) + 'px)';
+      }, 30);
+    }
+  }, 500);
+}
+
+function animBars() {
+  if (!isPlaying) return;
+  bars.forEach(b => {
+    const h = 3 + Math.random() * 24;
+    b.style.height = h + 'px';
+    b.style.background = h > 20 ? '#ffcc00' : h > 14 ? '#00ff41' : '#00cc33';
+  });
+  eqBars.forEach(b => {
+    const cur = parseFloat(b.style.height) || 50;
+    b.style.height = Math.max(10, Math.min(95, cur + (Math.random() - 0.5) * 20)) + '%';
+  });
+  animFrame = requestAnimationFrame(animBars);
+}
+
+function idleBars() {
+  bars.forEach(b => { b.style.height = '2px'; b.style.background = '#003300'; });
+}
+
+function play() {
+  audio.play().catch(() => { statusEl.textContent = 'LOAD ERROR'; });
+  isPlaying = true;
+  playBtn.textContent = '⏸';
+  statusEl.textContent = 'PLAYING';
+  cancelAnimationFrame(animFrame);
+  animBars();
+}
+
+function pause() {
+  audio.pause();
+  isPlaying = false;
+  playBtn.textContent = '▶';
+  statusEl.textContent = 'PAUSED';
+  cancelAnimationFrame(animFrame);
+}
+
+function stop() {
+  audio.pause();
+  audio.currentTime = 0;
+  isPlaying = false;
+  playBtn.textContent = '▶';
+  statusEl.textContent = 'STOPPED';
+  cancelAnimationFrame(animFrame);
+  idleBars();
+  timeEl.textContent = '0:00';
+  seekFill.style.width = '0%';
+  seekThumb.style.left = '0%';
+}
+
+document.getElementById('btn-play').addEventListener('click', () => isPlaying ? pause() : play());
+document.getElementById('btn-stop').addEventListener('click', stop);
+document.getElementById('btn-prev').addEventListener('click', () => {
+  currentTrack = (currentTrack - 1 + playlist.length) % playlist.length;
+  loadTrack(currentTrack); if (isPlaying) play();
+});
+document.getElementById('btn-next').addEventListener('click', () => {
+  currentTrack = (currentTrack + 1) % playlist.length;
+  loadTrack(currentTrack); if (isPlaying) play();
+});
+
+audio.addEventListener('timeupdate', () => {
+  if (!audio.duration) return;
+  const pct = (audio.currentTime / audio.duration) * 100;
+  seekFill.style.width = pct + '%';
+  seekThumb.style.left = pct + '%';
+  timeEl.textContent = fmt(audio.currentTime);
+  durEl.textContent = '/ ' + fmt(audio.duration);
+});
+
+audio.addEventListener('ended', () => {
+  currentTrack = (currentTrack + 1) % playlist.length;
+  loadTrack(currentTrack); play();
+});
+
+seekTrack.addEventListener('click', e => {
+  if (!audio.duration) return;
+  const rect = seekTrack.getBoundingClientRect();
+  audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+});
+
+volTrack.addEventListener('click', e => {
+  const rect = volTrack.getBoundingClientRect();
+  volume = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  audio.volume = volume;
+  volFill.style.width = (volume * 100) + '%';
+});
+
+loadTrack(0);
+idleBars();
+</script>
+</body>
+</html>
